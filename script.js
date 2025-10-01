@@ -1,5 +1,5 @@
 // Đường dẫn tới file PDF của bạn
-const url = "handouts/webinstruction.pdf";
+const url = "./handouts/webinstruction.pdf";
 
 let pdfDoc = null,
     pageNum = 1,
@@ -62,3 +62,4 @@ document.getElementById("next").addEventListener("click", function () {
   pageNum++;
   queueRenderPage(pageNum);
 });
+
