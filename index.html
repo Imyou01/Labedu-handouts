@@ -2,36 +2,41 @@
 <html lang="vi">
 <head>
   <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Lab Edu Handout Viewer</title>
   <link rel="stylesheet" href="style.css">
-  <!-- Thư viện PDF.js -->
+
+  <!-- PDF.js 3.x -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js?v=1"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js"></script>
-<script>
-  // bắt buộc: chỉ ra worker
-  window.pdfjsLib = window.pdfjsLib || {};
-  pdfjsLib.GlobalWorkerOptions.workerSrc =
-    "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
-</script>
-<!-- StPageFlip (CSS + JS) -->
-<link rel="stylesheet" href="https://unpkg.com/page-flip/dist/css/page-flip.css" />
-<script src="https://unpkg.com/page-flip/dist/js/page-flip.browser.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js"></script>
+  <script>
+    window.pdfjsLib = window.pdfjsLib || {};
+    pdfjsLib.GlobalWorkerOptions.workerSrc =
+      "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+  </script>
+
+  <!-- StPageFlip -->
+  <link rel="stylesheet" href="https://unpkg.com/page-flip/dist/css/page-flip.css" />
+  <script src="https://unpkg.com/page-flip/dist/js/page-flip.browser.min.js"></script>
 </head>
 <body>
   <header><h1>Lab Edu Handout Viewer</h1></header>
-<main>
-  <div class="toolbar">
-    <button id="prev">← Trang trước</button>
-    <button id="next">Trang sau →</button>
-    <span id="page-info">Trang 1 / ?</span>
-    <label style="margin-left:12px">Zoom
-      <input id="zoom" type="range" min="1" max="2" step="0.05" value="1">
-    </label>
-  </div>
 
-  <!-- flipbook container -->
-  <div id="flipbook" style="height:72vh;"></div>
-</main>
-<script src="script.js"></script>
+  <main>
+    <div class="toolbar">
+      <button id="prev">← Trang trước</button>
+      <button id="next">Trang sau →</button>
+      <span id="page-info">Trang 1 / ?</span>
+      <label style="margin-left:12px">Zoom
+        <input id="zoom" type="range" min="1" max="2" step="0.05" value="1">
+      </label>
+    </div>
+
+    <!-- flipbook container -->
+    <div id="flipbook" style="height:72vh;"></div>
+  </main>
+
+  <!-- Code của bạn -->
+  <script src="script.js"></script>
 </body>
 </html>
