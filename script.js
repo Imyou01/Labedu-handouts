@@ -1,6 +1,6 @@
 // Đường dẫn tới file PDF của bạn
-const url = "./handouts/webinstruction.pdf";
-//const url = "https://mozilla.github.io/pdf.js/web/compressed.tracemonkey-pldi-09.pdf";
+const url = new URL("./handouts/webinstruction.pdf", location.href).toString();
+
 let pdfDoc = null, pageNum = 1, pageRendering = false, pageNumPending = null;
 let scale = 1.3;
 const canvas = document.createElement("canvas");
@@ -62,5 +62,3 @@ document.getElementById("next").addEventListener("click", function () {
   pageNum++;
   queueRenderPage(pageNum);
 });
-
-
