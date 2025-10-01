@@ -47,46 +47,49 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   (async function main() {
-    try {
-      pdfDoc = await pdfjsLib.getDocument(pdfUrl).promise;
-      totalPages = pdfDoc.numPages;
+  try {
+    // 1) Tải PDF
+    pdfDoc = await pdfjsLib.getDocument(pdfUrl).promise;
+    totalPages = pdfDoc.numPages;
 
-      const firstImages = [];
-      const firstCount = Math.min(2, totalPages);
-      for (let i = 1; i <= firstCount; i++) {
-        firstImages.push(await renderPageToImage(pdfDoc, i, 1.4));
-      }
-
-      pageFlip = new St.PageFlip(flipEl, {
-        width: baseWidth,
-        height: baseHeight,
-        size: "stretch",
-        minWidth: 400,
-        minHeight: 300,
-        maxWidth: 1600,
-        maxHeight: 2200,
-        showCover: true,
-        mobileScrollSupport: true,
-        useMouseEvents: true,
-        flippingTime: 700
-      });
-
-      pageFlip.loadFromImages(firstImages);
-      bindFlipEvents();
-
-      for (let i = firstCount + 1; i <= totalPages; i++) {
-        const img = await renderPageToImage(pdfDoc, i, 1.4);
-        pageFlip.addPage(img, i - 1);
-        pageInfo.textContent =
-          `Trang ${pageFlip.getCurrentPageIndex() + 1} / ${pageFlip.getPageCount()}`;
-        await new Promise(r => setTimeout(r, 0));
-      }
-    } catch (err) {
-      flipEl.innerHTML =
-        `<div style="padding:16px;color:#b91c1c">Không tải được PDF: ${err.message}</div>`;
-      console.error(err);
+    // 2) Render toàn bộ trang -> array ảnh (có progress)
+    const images = [];
+    for (let i = 1; i <= totalPages; i++) {
+      pageInfo.textContent = `Đang chuẩn bị: ${i}/${totalPages}`;
+      const img = await renderPageToImage(pdfDoc, i, 1.4); // scale 1.2–1.4 là đẹp
+      images.push(img);
+      // Nhường UI 1 khung hình cho mượt
+      await new Promise(r => requestAnimationFrame(r));
     }
-  })();
+
+    // 3) Khởi tạo Flipbook 1 lần rồi nạp toàn bộ ảnh
+    pageFlip = new St.PageFlip(flipEl, {
+      width: baseWidth,
+      height: baseHeight,
+      size: "stretch",
+      minWidth: 400,
+      minHeight: 300,
+      maxWidth: 1600,
+      maxHeight: 2200,
+      showCover: true,
+      mobileScrollSupport: true,
+      useMouseEvents: true,
+      flippingTime: 700
+    });
+
+    pageFlip.loadFromImages(images);
+    bindFlipEvents(); // cập nhật số trang / lật trang
+
+    // Hiển thị lại info lần đầu
+    pageInfo.textContent = `Trang ${pageFlip.getCurrentPageIndex() + 1} / ${pageFlip.getPageCount()}`;
+
+  } catch (err) {
+    flipEl.innerHTML =
+      `<div style="padding:16px;color:#b91c1c">Không tải được PDF: ${err.message}</div>`;
+    console.error(err);
+  }
+})();
+
 
   document.getElementById("prev").addEventListener("click", () => pageFlip && pageFlip.flipPrev());
   document.getElementById("next").addEventListener("click", () => pageFlip && pageFlip.flipNext());
