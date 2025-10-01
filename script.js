@@ -1,4 +1,17 @@
 document.addEventListener("DOMContentLoaded", () => {
+   // BẮT BUỘC: kiểm tra thư viện đã nạp
+  if (!window.pdfjsLib) {
+    console.error("PDF.js chưa nạp");
+    document.getElementById("flipbook").innerHTML =
+      '<div style="padding:16px;color:#b91c1c">Không tải được PDF.js</div>';
+    return;
+  }
+  if (!window.St || !window.St.PageFlip) {
+    console.error("StPageFlip chưa nạp");
+    document.getElementById("flipbook").innerHTML =
+      '<div style="padding:16px;color:#b91c1c">Không tải được StPageFlip</div>';
+    return;
+  }
   // ====== CẤU HÌNH ======
   const pdfUrl = new URL("./handouts/webinstruction.pdf", location.href).toString();
   const baseWidth = 800;
