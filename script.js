@@ -1,23 +1,23 @@
 // Đường dẫn tới file PDF của bạn
 const url = "./handouts/webinstruction.pdf";
 
-let pdfDoc = null,
-    pageNum = 1,
-    pageRendering = false,
-    pageNumPending = null,
-    scale = 1.3,
-    canvas = document.createElement("canvas"),
-    ctx = canvas.getContext("2d");
-
+let pdfDoc = null, pageNum = 1, pageRendering = false, pageNumPending = null;
+let scale = 1.3;
+const canvas = document.createElement("canvas");
+const ctx = canvas.getContext("2d");
 document.getElementById("viewer").appendChild(canvas);
 
-// Load PDF
-pdfjsLib.getDocument(url).promise.then(function (pdf) {
-  pdfDoc = pdf;
-  document.getElementById("page-info").textContent =
-    `Trang ${pageNum} / ${pdfDoc.numPages}`;
-  renderPage(pageNum);
-});
+pdfjsLib.getDocument(url).promise
+  .then(function (pdf) {
+    pdfDoc = pdf;
+    document.getElementById("page-info").textContent = `Trang ${pageNum} / ${pdfDoc.numPages}`;
+    renderPage(pageNum);
+  })
+  .catch(err => {
+    document.getElementById("viewer").innerHTML =
+      `<div style="padding:16px;color:#b91c1c">Không tải được PDF: ${err.message}</div>`;
+    console.error(err);
+  });
 
 // Render 1 trang
 function renderPage(num) {
@@ -62,4 +62,3 @@ document.getElementById("next").addEventListener("click", function () {
   pageNum++;
   queueRenderPage(pageNum);
 });
-
