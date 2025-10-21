@@ -14,8 +14,8 @@ document.addEventListener("DOMContentLoaded", () => {
   }
   // ====== CẤU HÌNH ======
   const pdfUrl = new URL("./handouts/webinstruction.pdf", location.href).toString();
-  const baseWidth = 800;
-  const baseHeight = 1130;
+  const baseWidth = 550;
+  const baseHeight = 777;
 
   let pdfDoc = null;
   let pageFlip = null;
@@ -66,7 +66,7 @@ document.addEventListener("DOMContentLoaded", () => {
     pageFlip = new St.PageFlip(flipEl, {
       width: baseWidth,
       height: baseHeight,
-      size: "stretch",
+     // size: "stretch",
       minWidth: 400,
       minHeight: 300,
       maxWidth: 1600,
