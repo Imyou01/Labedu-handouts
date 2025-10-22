@@ -4,9 +4,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Lab Edu Handout Viewer</title>
-  <link rel="stylesheet" href="style.css?v=2">
+  <link rel="stylesheet" href="style.css">
 
-  <!-- PDF.js 3.x -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js?v=1"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js"></script>
   <script>
@@ -15,7 +14,6 @@
       "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
   </script>
 
-  <!-- StPageFlip -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/page-flip@2.0.7/dist/css/page-flip.css">
 <script src="https://cdn.jsdelivr.net/npm/page-flip@2.0.7/dist/js/page-flip.browser.min.js"></script>
 
@@ -29,17 +27,13 @@
       <button id="next">Trang sau →</button>
       <span id="page-info">Trang 1 / ?</span>
       <label style="margin-left:12px">Zoom
-        <input id="zoom" type="range" min="1" max="2" step="0.05" value="0.75">
+        <input id="zoom" type="range" min="1" max="2" step="0.05" value="1">
       </label>
     </div>
 
-    <!-- flipbook container -->
     <div id="flipbook"></div>
   </main>
 
-  <!-- Code của bạn -->
   <script src="script.js"></script>
 </body>
 </html>
-
-
