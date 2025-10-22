@@ -14,8 +14,8 @@ document.addEventListener("DOMContentLoaded", () => {
   }
   // ====== CẤU HÌNH ======
   const pdfUrl = new URL("./handouts/webinstruction.pdf", location.href).toString();
-  const baseWidth = 500;
-  const baseHeight = 707;
+  const baseWidth = 540;
+  const baseHeight = 763;
 
   let pdfDoc = null;
   let pageFlip = null;
@@ -66,7 +66,7 @@ document.addEventListener("DOMContentLoaded", () => {
     pageFlip = new St.PageFlip(flipEl, {
       width: baseWidth,
       height: baseHeight,
-      size: "stretch",
+     // size: "stretch",
       minWidth: 400,
       minHeight: 300,
       maxWidth: 1600,
@@ -100,4 +100,5 @@ document.addEventListener("DOMContentLoaded", () => {
     flipEl.style.transformOrigin = "top center";
   });
 });
+
 
