@@ -77,8 +77,9 @@ document.addEventListener("DOMContentLoaded", () => {
       flippingTime: 700
     });
 
+  
+      bindFlipEvents(); // cập nhật số trang / lật trang
     pageFlip.loadFromImages(images);
-    bindFlipEvents(); // cập nhật số trang / lật trang
 
     // Hiển thị lại info lần đầu
     pageInfo.textContent = `Trang ${pageFlip.getCurrentPageIndex() + 1} / ${pageFlip.getPageCount()}`;
