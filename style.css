@@ -53,15 +53,7 @@ button:hover {
 }
 
 /* Flipbook container */
-#flipbook {
-  /* FIX QUAN TRỌNG: 
-    Chúng ta ép container phải có kích thước của 2 trang sách.
-    Script của bạn đặt baseWidth = 800px. 
-    Vậy 2 trang là 1600px.
-  */
-  width: 1600px;
-  height: 1130px; /* Lấy từ baseHeight trong script.js */
-
+##flipbook {
   margin: auto;
   border-radius: 12px;
   box-shadow: 0 10px 30px rgba(0,0,0,.2);
@@ -69,9 +61,9 @@ button:hover {
   overflow: hidden;
   transform-origin: top center;
 }
-
 /* Zoom input */
 input[type="range"] {
   vertical-align: middle;
 }
+
 
