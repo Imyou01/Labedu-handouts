@@ -12,10 +12,13 @@ document.addEventListener("DOMContentLoaded", () => {
       '<div style="padding:16px;color:#b91c1c">Không tải được StPageFlip</div>';
     return;
   }
-  // ====== CẤU HÌNH ======
+  
+  // ====== CẤU HÌNH (FIX) ======
+  // Thu nhỏ để vừa khung 1060px (1100 - 40 padding)
+  // Tỷ lệ gốc: 1130 / 800 = 1.4125
   const pdfUrl = new URL("./handouts/webinstruction.pdf", location.href).toString();
-  const baseWidth = 540;
-  const baseHeight = 763;
+  const baseWidth = 520;  // FIX: (520 * 2 = 1040px, vừa vặn < 1060px)
+  const baseHeight = 735; // FIX: (520 * 1.4125 = 734.5)
 
   let pdfDoc = null;
   let pageFlip = null;
@@ -56,33 +59,35 @@ document.addEventListener("DOMContentLoaded", () => {
     const images = [];
     for (let i = 1; i <= totalPages; i++) {
       pageInfo.textContent = `Đang chuẩn bị: ${i}/${totalPages}`;
-      const img = await renderPageToImage(pdfDoc, i, 1.4); // scale 1.2–1.4 là đẹp
+      const img = await renderPageToImage(pdfDoc, i, 1.4); 
       images.push(img);
-      // Nhường UI 1 khung hình cho mượt
       await new Promise(r => requestAnimationFrame(r));
     }
 
-    // 3) Khởi tạo Flipbook 1 lần rồi nạp toàn bộ ảnh
+    // 3) Khởi tạo Flipbook (FIX)
     pageFlip = new St.PageFlip(flipEl, {
-      width: baseWidth,
-      height: baseHeight,
-     // size: "stretch",
-      minWidth: 400,
-      minHeight: 300,
-      maxWidth: 1600,
-      maxHeight: 2200,
+      width: baseWidth,   // 520
+      height: baseHeight, // 735
+      size: "stretch",    // Giữ "stretch" để lấp đầy khung 1040x735
+      
+      // Cập nhật min/max cho phù hợp
+      minWidth: 300,
+      minHeight: 424,
+      maxWidth: 1040,     // 520 * 2
+      maxHeight: 1470,    // 735 * 2
+
       showCover: true,
       mobileScrollSupport: true,
       useMouseEvents: true,
       flippingTime: 700
     });
 
-  
-      bindFlipEvents(); // cập nhật số trang / lật trang
+    // FIX: Gọi bind TRƯỚC khi load
+    bindFlipEvents(); 
     pageFlip.loadFromImages(images);
 
-    // Hiển thị lại info lần đầu
-    pageInfo.textContent = `Trang ${pageFlip.getCurrentPageIndex() + 1} / ${pageFlip.getPageCount()}`;
+    // Hiển thị lại info lần đầu (đã có trong sự kiện "init")
+    // pageInfo.textContent = `Trang ${pageFlip.getCurrentPageIndex() + 1} / ${pageFlip.getPageCount()}`;
 
   } catch (err) {
     flipEl.innerHTML =
@@ -100,5 +105,3 @@ document.addEventListener("DOMContentLoaded", () => {
     flipEl.style.transformOrigin = "top center";
   });
 });
-
-
