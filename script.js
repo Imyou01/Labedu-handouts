@@ -14,8 +14,8 @@ document.addEventListener("DOMContentLoaded", () => {
   }
   // ====== CẤU HÌNH ======
   const pdfUrl = new URL("./handouts/webinstruction.pdf", location.href).toString();
-  const baseWidth = 800;
-  const baseHeight = 1130;
+  const baseWidth = 500;
+  const baseHeight = 707;
 
   let pdfDoc = null;
   let pageFlip = null;
@@ -100,3 +100,4 @@ document.addEventListener("DOMContentLoaded", () => {
     flipEl.style.transformOrigin = "top center";
   });
 });
+
