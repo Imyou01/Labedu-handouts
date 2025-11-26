@@ -1,14 +1,13 @@
 /* Reset nhỏ */
-* {
-  box-sizing: border-box;
-}
+* { box-sizing: border-box; }
 body {
   font-family: Arial, sans-serif;
   margin: 0;
-  background: #f2f4f8; /* nền nhẹ */
+  background: #f2f4f8;
   display: flex;
   flex-direction: column;
-  min-height: 100vh;
+  height: 100vh; /* Cố định chiều cao màn hình */
+  overflow: hidden; /* Ẩn thanh cuộn thừa của body */
 }
 
 /* Header */
@@ -18,14 +17,73 @@ header {
   padding: 12px;
   text-align: center;
   box-shadow: 0 2px 6px rgba(0,0,0,.15);
+  flex-shrink: 0;
+  z-index: 10;
 }
 
-/* Main layout */
-main {
+/* Layout chia cột: Main (trái) - Sidebar (phải) */
+.app-container {
+  display: flex;
   flex: 1;
+  overflow: hidden; /* Để scroll nằm bên trong từng phần */
+}
+
+/* CỘT TRÁI */
+main {
+  flex: 1; /* Chiếm phần lớn diện tích */
   padding: 20px;
-  max-width: 1100px; /* Giữ nguyên, không gian cho sách là 1060px */
-  margin: 0 auto;
+  overflow: auto; /* Cho phép cuộn nếu sách quá dài */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* CỘT PHẢI (SIDEBAR) */
+.sidebar {
+  width: 300px; /* Chiều rộng cố định */
+  background: #ffffff;
+  border-left: 1px solid #ddd;
+  padding: 20px;
+  overflow-y: auto;
+  box-shadow: -2px 0 5px rgba(0,0,0,0.05);
+}
+
+.sidebar h3 {
+  margin-top: 0;
+  color: #1346ac;
+  font-size: 18px;
+  border-bottom: 2px solid #f2f4f8;
+  padding-bottom: 10px;
+}
+
+.nav-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.nav-item {
+  padding: 12px 15px;
+  margin-bottom: 8px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 14px;
+  color: #333;
+  border: 1px solid transparent;
+}
+
+.nav-item:hover {
+  background: #e9ecef;
+  color: #1346ac;
+}
+
+.nav-item.active {
+  background: #e7f0ff;
+  color: #1346ac;
+  border-color: #1346ac;
+  font-weight: bold;
 }
 
 /* Toolbar */
@@ -35,6 +93,7 @@ main {
   align-items: center;
   gap: 10px;
   flex-wrap: wrap;
+  justify-content: center;
 }
 button {
   padding: 6px 12px;
@@ -42,31 +101,18 @@ button {
   background: white;
   cursor: pointer;
   border-radius: 6px;
-  transition: background 0.2s;
 }
-button:hover {
-  background: #f0f0f0;
-}
-#page-info {
-  font-size: 14px;
-  color: #333;
-}
+button:hover { background: #f0f0f0; }
 
 /* Flipbook container */
 #flipbook {
-  /* FIX: Đặt kích thước cố định cho 2 trang sách (520 * 2) */
-  width: 1040px;
+  /* Kích thước fix cho 2 trang (250 * 2 = 500) */
+  /* Lưu ý: Nếu muốn to hơn, hãy sửa đồng bộ ở script.js và ở đây */
+  width: 1040px; 
   height: 735px;
-
-  margin: auto;
-  border-radius: 12px;
+  margin-bottom: 40px;
+  flex-shrink: 0; 
+  
   box-shadow: 0 10px 30px rgba(0,0,0,.2);
   background: white;
-  overflow: hidden;
-  transform-origin: top center;
-}
-
-/* Zoom input */
-input[type="range"] {
-  vertical-align: middle;
 }
