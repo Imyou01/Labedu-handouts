@@ -118,7 +118,7 @@ button:hover { background: #f0f0f0; }
 }
 .page {
   /* Màu nền của tờ giấy */
-  background-color: white; 
+  background-color: white !important;
   
   /* Xử lý nội dung bên trong */
   overflow: hidden;
@@ -127,11 +127,8 @@ button:hover { background: #f0f0f0; }
   justify-content: center;
   align-items: center;
   
-  /* QUAN TRỌNG: Thêm bóng đổ cho TỪNG TRANG thay vì cả khung */
-  box-shadow: 0 5px 15px rgba(0,0,0,0.15); 
-  
-  /* Thêm viền mờ để tách biệt các trang trắng */
-  border: 1px solid #e0e0e0;
+ border: 1px solid #c0c0c0;          /* Viền nhẹ cho tờ giấy */
+  box-shadow: 0 5px 15px rgba(0,0,0,0.2); /* Bóng đổ cho TỪNG TỜ GIẤY */
 }
 
 /* Canvas render PDF sẽ nằm gọn trong trang */
