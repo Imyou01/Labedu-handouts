@@ -2,60 +2,50 @@ document.addEventListener("DOMContentLoaded", () => {
   // === 1. KIỂM TRA THƯ VIỆN ===
   if (!window.pdfjsLib || !window.St || !window.St.PageFlip) {
     document.getElementById("flipbook").innerHTML = 
-      '<div style="color:red;padding:20px">Lỗi: Chưa nạp đủ thư viện PDF.js hoặc PageFlip</div>';
+      '<div style="color:red;padding:20px">Lỗi: Thiếu thư viện.</div>';
     return;
   }
 
-  // === 2. CẤU HÌNH (Đồng bộ với CSS) ===
+  // === 2. CẤU HÌNH ===
+  // Giảm scale xuống 1.2 hoặc 1.0 nếu muốn nhanh hơn nữa (nhưng mờ hơn)
+  const RENDER_SCALE = 1.2; 
   const baseWidth = 520;  
   const baseHeight = 735; 
 
-  // Các biến toàn cục quản lý trạng thái
   let currentFlipBook = null;
   const flipEl = document.getElementById("flipbook");
   const pageInfo = document.getElementById("page-info");
   
-  // === 3. HÀM XỬ LÝ PDF ===
-  async function renderPageToImage(pdf, num, scale = 1.4) {
-    const page = await pdf.getPage(num);
-    const viewport = page.getViewport({ scale });
-    const canvas = document.createElement("canvas");
-    const ctx = canvas.getContext("2d");
-    canvas.width = viewport.width;
-    canvas.height = viewport.height;
-    await page.render({ canvasContext: ctx, viewport }).promise;
-    return canvas.toDataURL("image/webp", 0.9);
-  }
-
-  // === 4. HÀM TẢI SÁCH (CORE) ===
+  // === 3. HÀM TẢI SÁCH (LOGIC MỚI) ===
   async function loadBook(url) {
-    // A. Dọn dẹp sách cũ (nếu có)
+    // A. Dọn dẹp sách cũ
     if (currentFlipBook) {
-      currentFlipBook.destroy(); // Hủy instance cũ
+      currentFlipBook.destroy();
       currentFlipBook = null;
-      flipEl.innerHTML = ""; // Xóa sạch HTML cũ
     }
+    flipEl.innerHTML = ""; // Xóa sạch HTML cũ
 
-    // Reset thông báo
-    pageInfo.textContent = "Đang tải tài liệu...";
+    pageInfo.textContent = "Đang lấy thông tin...";
     
     try {
-      // B. Tải PDF
+      // B. Tải thông tin PDF (Chỉ tải file, chưa render)
       const loadingTask = pdfjsLib.getDocument(url);
       const pdfDoc = await loadingTask.promise;
       const totalPages = pdfDoc.numPages;
-      const images = [];
 
-      // C. Render từng trang
+      // C. TẠO KHUNG HTML TRƯỚC (Đây là bước giúp nhanh hơn)
+      // Tạo sẵn N thẻ div trắng tương ứng với N trang
       for (let i = 1; i <= totalPages; i++) {
-        pageInfo.textContent = `Đang xử lý trang: ${i}/${totalPages}`;
-        const img = await renderPageToImage(pdfDoc, i, 1.4);
-        images.push(img);
-        // Nghỉ 1 chút để không đơ trình duyệt
-        await new Promise(r => requestAnimationFrame(r));
+        const pageDiv = document.createElement("div");
+        pageDiv.className = "page";
+        pageDiv.id = `page-${i}`;
+        // Thêm chữ "Loading..." mờ ở giữa
+        pageDiv.innerHTML = `<div class="page-loader">Đang tải trang ${i}...</div>`;
+        flipEl.appendChild(pageDiv);
       }
 
-      // D. Khởi tạo Flipbook mới
+      // D. KHỞI TẠO FLIPBOOK NGAY LẬP TỨC
+      // Người dùng sẽ thấy sách ngay, dù nội dung đang trắng
       currentFlipBook = new St.PageFlip(flipEl, {
         width: baseWidth,
         height: baseHeight,
@@ -65,65 +55,95 @@ document.addEventListener("DOMContentLoaded", () => {
         maxWidth: 1040,
         maxHeight: 1470,
         showCover: true,
-        useMouseEvents: true
+        useMouseEvents: true,
+        // Chú ý: Dùng mode HTML thì không cần flippingTime quá lâu
+        flippingTime: 600 
       });
 
-      // E. Gán sự kiện lật trang
+      // Load các thẻ .page vừa tạo vào Flipbook
+      const pageNodes = document.querySelectorAll(".page");
+      currentFlipBook.loadFromHTML(pageNodes);
+
+      // E. Cập nhật thông tin trang
+      pageInfo.textContent = `Trang 1 / ${totalPages}`;
       currentFlipBook.on("flip", (e) => {
-        pageInfo.textContent = `Trang ${e.data + 1} / ${currentFlipBook.getPageCount()}`;
+        pageInfo.textContent = `Trang ${e.data + 1} / ${totalPages}`;
       });
 
-      // F. Nạp ảnh vào sách
-      currentFlipBook.loadFromImages(images);
-      
-      // Cập nhật thông tin ban đầu
-      pageInfo.textContent = `Trang 1 / ${currentFlipBook.getPageCount()}`;
+      // F. RENDER TỪNG TRANG (CHẠY NGẦM)
+      // Chúng ta sẽ render từng trang và nhét Canvas vào thẻ div đã tạo
+      for (let i = 1; i <= totalPages; i++) {
+        renderPageDirectly(pdfDoc, i);
+        
+        // Mẹo: Nghỉ 1 chút sau mỗi 3 trang để trình duyệt không bị đơ
+        if (i % 3 === 0) await new Promise(r => setTimeout(r, 10));
+      }
 
     } catch (err) {
       console.error(err);
-      flipEl.innerHTML = `<div style="color:red;padding:20px;text-align:center">
-        Không thể tải tài liệu này.<br>Lỗi: ${err.message}<br>
-        (Kiểm tra xem đường dẫn file PDF có đúng không)
-      </div>`;
+      flipEl.innerHTML = `<div style="color:red;padding:20px">Lỗi tải PDF: ${err.message}</div>`;
     }
   }
 
-  // === 5. XỬ LÝ SỰ KIỆN MENU ===
+  // === 4. HÀM RENDER CANVAS TRỰC TIẾP ===
+  async function renderPageDirectly(pdfDoc, pageNum) {
+    try {
+      const page = await pdfDoc.getPage(pageNum);
+      
+      // Tính toán viewport
+      // (Mẹo: Tính scale dựa trên kích thước div để nét nhất)
+      const unscaledViewport = page.getViewport({ scale: 1 });
+      // Tự động chỉnh scale sao cho vừa khít chiều rộng cấu hình (baseWidth)
+      // Giúp ảnh nét mà không cần render quá to
+      const scale = (baseWidth / unscaledViewport.width) * 1.5; // *1.5 để nét hơn trên màn retina
+      
+      const viewport = page.getViewport({ scale: scale });
+
+      // Tạo Canvas
+      const canvas = document.createElement("canvas");
+      const ctx = canvas.getContext("2d");
+      canvas.width = viewport.width;
+      canvas.height = viewport.height;
+
+      // Render PDF lên Canvas
+      await page.render({ canvasContext: ctx, viewport }).promise;
+
+      // Tìm thẻ div trang tương ứng và thay thế nội dung loading bằng canvas
+      const pageDiv = document.getElementById(`page-${pageNum}`);
+      if (pageDiv) {
+        pageDiv.innerHTML = ""; // Xóa chữ "Loading..."
+        pageDiv.appendChild(canvas);
+      }
+    } catch (e) {
+      console.error(`Lỗi render trang ${pageNum}:`, e);
+    }
+  }
+
+  // === 5. XỬ LÝ MENU BÊN PHẢI (Giữ nguyên logic cũ) ===
   const navItems = document.querySelectorAll(".nav-item");
   navItems.forEach(item => {
     item.addEventListener("click", () => {
-      // 1. Xử lý giao diện (Active class)
       navItems.forEach(nav => nav.classList.remove("active"));
       item.classList.add("active");
-
-      // 2. Lấy URL và tải sách
       const url = item.getAttribute("data-url");
-      if(url) {
-        loadBook(url);
-      }
+      if(url) loadBook(url);
     });
   });
 
-  // === 6. CÁC NÚT ĐIỀU KHIỂN (Prev/Next/Zoom) ===
+  // === 6. NÚT ĐIỀU KHIỂN (Giữ nguyên) ===
   document.getElementById("prev").addEventListener("click", () => {
     if (currentFlipBook) currentFlipBook.flipPrev();
   });
-  
   document.getElementById("next").addEventListener("click", () => {
     if (currentFlipBook) currentFlipBook.flipNext();
   });
-
   document.getElementById("zoom").addEventListener("input", (e) => {
     const scale = parseFloat(e.target.value);
     flipEl.style.transform = `scale(${scale})`;
     flipEl.style.transformOrigin = "top center";
   });
 
-  // === 7. CHẠY MẶC ĐỊNH LẦN ĐẦU ===
-  // Tự động click vào mục đầu tiên (active) để tải sách
+  // Chạy lần đầu
   const defaultItem = document.querySelector(".nav-item.active");
-  if(defaultItem) {
-    const url = defaultItem.getAttribute("data-url");
-    loadBook(url);
-  }
+  if(defaultItem) loadBook(defaultItem.getAttribute("data-url"));
 });
