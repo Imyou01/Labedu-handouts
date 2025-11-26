@@ -1,32 +1,21 @@
 document.addEventListener("DOMContentLoaded", () => {
-   // BẮT BUỘC: kiểm tra thư viện đã nạp
-  if (!window.pdfjsLib) {
-    console.error("PDF.js chưa nạp");
-    document.getElementById("flipbook").innerHTML =
-      '<div style="padding:16px;color:#b91c1c">Không tải được PDF.js</div>';
+  // === 1. KIỂM TRA THƯ VIỆN ===
+  if (!window.pdfjsLib || !window.St || !window.St.PageFlip) {
+    document.getElementById("flipbook").innerHTML = 
+      '<div style="color:red;padding:20px">Lỗi: Chưa nạp đủ thư viện PDF.js hoặc PageFlip</div>';
     return;
   }
-  if (!window.St || !window.St.PageFlip) {
-    console.error("StPageFlip chưa nạp");
-    document.getElementById("flipbook").innerHTML =
-      '<div style="padding:16px;color:#b91c1c">Không tải được StPageFlip</div>';
-    return;
-  }
-  
-  // ====== CẤU HÌNH (FIX) ======
-  // Thu nhỏ để vừa khung 1060px (1100 - 40 padding)
-  // Tỷ lệ gốc: 1130 / 800 = 1.4125
-  const pdfUrl = new URL("./handouts/webinstruction.pdf", location.href).toString();
-  const baseWidth = 520;  // FIX: (520 * 2 = 1040px, vừa vặn < 1060px)
-  const baseHeight = 735; // FIX: (520 * 1.4125 = 734.5)
 
-  let pdfDoc = null;
-  let pageFlip = null;
-  let totalPages = 0;
+  // === 2. CẤU HÌNH (Đồng bộ với CSS) ===
+  const baseWidth = 520;  
+  const baseHeight = 735; 
 
+  // Các biến toàn cục quản lý trạng thái
+  let currentFlipBook = null;
   const flipEl = document.getElementById("flipbook");
   const pageInfo = document.getElementById("page-info");
-
+  
+  // === 3. HÀM XỬ LÝ PDF ===
   async function renderPageToImage(pdf, num, scale = 1.4) {
     const page = await pdf.getPage(num);
     const viewport = page.getViewport({ scale });
@@ -38,70 +27,103 @@ document.addEventListener("DOMContentLoaded", () => {
     return canvas.toDataURL("image/webp", 0.9);
   }
 
-  function bindFlipEvents() {
-    pageFlip.on("init", () => {
-      pageInfo.textContent =
-        `Trang ${pageFlip.getCurrentPageIndex() + 1} / ${pageFlip.getPageCount()}`;
-    });
-    pageFlip.on("flip", (e) => {
-      pageInfo.textContent =
-        `Trang ${e.data + 1} / ${pageFlip.getPageCount()}`;
-    });
-  }
-
-  (async function main() {
-  try {
-    // 1) Tải PDF
-    pdfDoc = await pdfjsLib.getDocument(pdfUrl).promise;
-    totalPages = pdfDoc.numPages;
-
-    // 2) Render toàn bộ trang -> array ảnh (có progress)
-    const images = [];
-    for (let i = 1; i <= totalPages; i++) {
-      pageInfo.textContent = `Đang chuẩn bị: ${i}/${totalPages}`;
-      const img = await renderPageToImage(pdfDoc, i, 1.4); 
-      images.push(img);
-      await new Promise(r => requestAnimationFrame(r));
+  // === 4. HÀM TẢI SÁCH (CORE) ===
+  async function loadBook(url) {
+    // A. Dọn dẹp sách cũ (nếu có)
+    if (currentFlipBook) {
+      currentFlipBook.destroy(); // Hủy instance cũ
+      currentFlipBook = null;
+      flipEl.innerHTML = ""; // Xóa sạch HTML cũ
     }
 
-    // 3) Khởi tạo Flipbook (FIX)
-    pageFlip = new St.PageFlip(flipEl, {
-      width: baseWidth,   // 520
-      height: baseHeight, // 735
-      size: "stretch",    // Giữ "stretch" để lấp đầy khung 1040x735
+    // Reset thông báo
+    pageInfo.textContent = "Đang tải tài liệu...";
+    
+    try {
+      // B. Tải PDF
+      const loadingTask = pdfjsLib.getDocument(url);
+      const pdfDoc = await loadingTask.promise;
+      const totalPages = pdfDoc.numPages;
+      const images = [];
+
+      // C. Render từng trang
+      for (let i = 1; i <= totalPages; i++) {
+        pageInfo.textContent = `Đang xử lý trang: ${i}/${totalPages}`;
+        const img = await renderPageToImage(pdfDoc, i, 1.4);
+        images.push(img);
+        // Nghỉ 1 chút để không đơ trình duyệt
+        await new Promise(r => requestAnimationFrame(r));
+      }
+
+      // D. Khởi tạo Flipbook mới
+      currentFlipBook = new St.PageFlip(flipEl, {
+        width: baseWidth,
+        height: baseHeight,
+        size: "stretch",
+        minWidth: 300,
+        minHeight: 424,
+        maxWidth: 1040,
+        maxHeight: 1470,
+        showCover: true,
+        useMouseEvents: true
+      });
+
+      // E. Gán sự kiện lật trang
+      currentFlipBook.on("flip", (e) => {
+        pageInfo.textContent = `Trang ${e.data + 1} / ${currentFlipBook.getPageCount()}`;
+      });
+
+      // F. Nạp ảnh vào sách
+      currentFlipBook.loadFromImages(images);
       
-      // Cập nhật min/max cho phù hợp
-      minWidth: 300,
-      minHeight: 424,
-      maxWidth: 1040,     // 520 * 2
-      maxHeight: 1470,    // 735 * 2
+      // Cập nhật thông tin ban đầu
+      pageInfo.textContent = `Trang 1 / ${currentFlipBook.getPageCount()}`;
 
-      showCover: true,
-      mobileScrollSupport: true,
-      useMouseEvents: true,
-      flippingTime: 700
-    });
-
-    // FIX: Gọi bind TRƯỚC khi load
-    bindFlipEvents(); 
-    pageFlip.loadFromImages(images);
-
-    // Hiển thị lại info lần đầu (đã có trong sự kiện "init")
-    // pageInfo.textContent = `Trang ${pageFlip.getCurrentPageIndex() + 1} / ${pageFlip.getPageCount()}`;
-
-  } catch (err) {
-    flipEl.innerHTML =
-      `<div style="padding:16px;color:#b91c1c">Không tải được PDF: ${err.message}</div>`;
-    console.error(err);
+    } catch (err) {
+      console.error(err);
+      flipEl.innerHTML = `<div style="color:red;padding:20px;text-align:center">
+        Không thể tải tài liệu này.<br>Lỗi: ${err.message}<br>
+        (Kiểm tra xem đường dẫn file PDF có đúng không)
+      </div>`;
+    }
   }
-})();
 
+  // === 5. XỬ LÝ SỰ KIỆN MENU ===
+  const navItems = document.querySelectorAll(".nav-item");
+  navItems.forEach(item => {
+    item.addEventListener("click", () => {
+      // 1. Xử lý giao diện (Active class)
+      navItems.forEach(nav => nav.classList.remove("active"));
+      item.classList.add("active");
 
-  document.getElementById("prev").addEventListener("click", () => pageFlip && pageFlip.flipPrev());
-  document.getElementById("next").addEventListener("click", () => pageFlip && pageFlip.flipNext());
+      // 2. Lấy URL và tải sách
+      const url = item.getAttribute("data-url");
+      if(url) {
+        loadBook(url);
+      }
+    });
+  });
+
+  // === 6. CÁC NÚT ĐIỀU KHIỂN (Prev/Next/Zoom) ===
+  document.getElementById("prev").addEventListener("click", () => {
+    if (currentFlipBook) currentFlipBook.flipPrev();
+  });
+  
+  document.getElementById("next").addEventListener("click", () => {
+    if (currentFlipBook) currentFlipBook.flipNext();
+  });
+
   document.getElementById("zoom").addEventListener("input", (e) => {
     const scale = parseFloat(e.target.value);
     flipEl.style.transform = `scale(${scale})`;
     flipEl.style.transformOrigin = "top center";
   });
+
+  // === 7. CHẠY MẶC ĐỊNH LẦN ĐẦU ===
+  // Tự động click vào mục đầu tiên (active) để tải sách
+  const defaultItem = document.querySelector(".nav-item.active");
+  if(defaultItem) {
+    const url = defaultItem.getAttribute("data-url");
+    loadBook(url);
+  }
 });
