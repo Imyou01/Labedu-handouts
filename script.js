@@ -24,12 +24,27 @@ document.addEventListener("DOMContentLoaded", () => {
       currentFlipBook = null;
     }
 
-    // FIX QUAN TRỌNG:
-    // Thay vì chỉ xóa innerHTML, ta xóa hẳn thẻ div cũ và thay bằng thẻ mới
-    // để loại bỏ mọi CSS rác mà thư viện cũ để lại.
-    const newFlipEl = flipEl.cloneNode(false); // Copy thẻ div gốc (giữ nguyên id, class, style)
-    flipEl.parentNode.replaceChild(newFlipEl, flipEl); // Thay thế thẻ cũ bằng thẻ mới trên DOM
-    flipEl = newFlipEl; // Cập nhật biến global để code phía dưới dùng thẻ mới
+    // B. FIX LỖI: Tái tạo thẻ div an toàn (Safe Reset)
+    const mainContainer = document.querySelector("main"); // Lấy thẻ cha cố định
+    
+    // Tạo thẻ div mới tinh
+    const newFlipEl = document.createElement("div");
+    newFlipEl.id = "flipbook";
+    // Áp dụng lại style trong suốt (quan trọng để không bị khung trắng)
+    newFlipEl.style.cssText = "background: transparent !important; box-shadow: none !important;";
+
+    // LOGIC AN TOÀN:
+    if (flipEl && flipEl.parentNode) {
+      // Trường hợp 1: Thẻ cũ vẫn còn cha -> Thay thế bình thường
+      flipEl.parentNode.replaceChild(newFlipEl, flipEl);
+    } else {
+      // Trường hợp 2: Thẻ cũ đã bị thư viện xóa mất cha -> Gắn thẻ mới vào cuối main
+      if (flipEl) flipEl.remove(); // Xóa hẳn thẻ cũ đi cho sạch
+      mainContainer.appendChild(newFlipEl);
+    }
+
+    // Cập nhật biến toàn cục để dùng cho lần sau
+    flipEl = newFlipEl;
 
     pageInfo.textContent = "Đang lấy thông tin...";
     
@@ -77,7 +92,7 @@ document.addEventListener("DOMContentLoaded", () => {
       });
 
       // Load các thẻ .page vừa tạo vào Flipbook
-      const pageNodes = document.querySelectorAll(".page");
+      const pageNodes = newFlipEl.querySelectorAll(".page");
       currentFlipBook.loadFromHTML(pageNodes);
 
       // E. Cập nhật thông tin trang
