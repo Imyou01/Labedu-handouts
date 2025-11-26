@@ -113,17 +113,25 @@ button:hover { background: #f0f0f0; }
   margin-bottom: 40px;
   flex-shrink: 0; 
   
-  box-shadow: 0 10px 30px rgba(0,0,0,.2);
-  background: white;
+  background: transparent; 
+  box-shadow: none;
 }
 .page {
-  background-color: white;
+  /* Màu nền của tờ giấy */
+  background-color: white; 
+  
+  /* Xử lý nội dung bên trong */
   overflow: hidden;
   position: relative;
-  display: flex;       /* Để căn giữa nội dung */
+  display: flex;
   justify-content: center;
   align-items: center;
-  border-right: 1px solid #eee; /* Đường kẻ mờ giữa các trang */
+  
+  /* QUAN TRỌNG: Thêm bóng đổ cho TỪNG TRANG thay vì cả khung */
+  box-shadow: 0 5px 15px rgba(0,0,0,0.15); 
+  
+  /* Thêm viền mờ để tách biệt các trang trắng */
+  border: 1px solid #e0e0e0;
 }
 
 /* Canvas render PDF sẽ nằm gọn trong trang */
