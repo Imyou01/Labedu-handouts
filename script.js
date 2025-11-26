@@ -8,7 +8,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // === 2. CẤU HÌNH ===
   // Giảm scale xuống 1.2 hoặc 1.0 nếu muốn nhanh hơn nữa (nhưng mờ hơn)
-  const RENDER_SCALE = 1.2; 
+  const RENDER_SCALE = 1.0; 
   const baseWidth = 520;  
   const baseHeight = 735; 
 
@@ -36,12 +36,22 @@ document.addEventListener("DOMContentLoaded", () => {
       // C. TẠO KHUNG HTML TRƯỚC (Đây là bước giúp nhanh hơn)
       // Tạo sẵn N thẻ div trắng tương ứng với N trang
       for (let i = 1; i <= totalPages; i++) {
+        // 1. Tạo trang nội dung PDF
         const pageDiv = document.createElement("div");
         pageDiv.className = "page";
         pageDiv.id = `page-${i}`;
-        // Thêm chữ "Loading..." mờ ở giữa
         pageDiv.innerHTML = `<div class="page-loader">Đang tải trang ${i}...</div>`;
         flipEl.appendChild(pageDiv);
+
+        // --- FIX QUAN TRỌNG: CHÈN TRANG TRẮNG SAU BÌA ---
+        // Nếu đây là Trang 1 (Bìa), chèn thêm 1 trang trắng ngay sau nó
+        // Để khi lật bìa ra, mặt sau sẽ trắng đẹp, và nội dung bắt đầu từ trang bên phải
+        if (i === 1) {
+          const blankDiv = document.createElement("div");
+          blankDiv.className = "page page-blank"; // Class riêng cho trang trắng
+          blankDiv.innerHTML = ""; // Không có nội dung
+          flipEl.appendChild(blankDiv);
+        }
       }
 
       // D. KHỞI TẠO FLIPBOOK NGAY LẬP TỨC
