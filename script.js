@@ -13,7 +13,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const baseHeight = 735; 
 
   let currentFlipBook = null;
-  const flipEl = document.getElementById("flipbook");
+  let flipEl = document.getElementById("flipbook");
   const pageInfo = document.getElementById("page-info");
   
   // === 3. HÀM TẢI SÁCH (LOGIC MỚI) ===
@@ -23,7 +23,13 @@ document.addEventListener("DOMContentLoaded", () => {
       currentFlipBook.destroy();
       currentFlipBook = null;
     }
-    flipEl.innerHTML = ""; // Xóa sạch HTML cũ
+
+    // FIX QUAN TRỌNG:
+    // Thay vì chỉ xóa innerHTML, ta xóa hẳn thẻ div cũ và thay bằng thẻ mới
+    // để loại bỏ mọi CSS rác mà thư viện cũ để lại.
+    const newFlipEl = flipEl.cloneNode(false); // Copy thẻ div gốc (giữ nguyên id, class, style)
+    flipEl.parentNode.replaceChild(newFlipEl, flipEl); // Thay thế thẻ cũ bằng thẻ mới trên DOM
+    flipEl = newFlipEl; // Cập nhật biến global để code phía dưới dùng thẻ mới
 
     pageInfo.textContent = "Đang lấy thông tin...";
     
