@@ -153,56 +153,47 @@ document.addEventListener("DOMContentLoaded", () => {
 let isLuckySheetCreated = false;
 
 function loadExcelFile(url) {
-  // 1. Ẩn Sách & Toolbar
+  // 1. Ẩn giao diện Sách
   document.getElementById("flipbook").style.display = "none";
   document.querySelector(".toolbar").style.display = "none"; 
 
-  // 2. Hiện khung Excel
+  // 2. Reset khung Excel
   const sheetContainer = document.getElementById("spreadsheet-container");
   sheetContainer.style.display = "block"; 
   sheetContainer.innerHTML = ""; 
 
-  // --- FIX LỖI: CHỈ DESTROY KHI ĐÃ TỪNG TẠO ---
-  if (isLuckySheetCreated && window.luckysheet) {
-      try {
-          luckysheet.destroy();
-      } catch (e) { console.log("Lỗi dọn dẹp cũ:", e); }
-  }
+  // 3. Xóa dữ liệu cũ (Safe Destroy)
+  try {
+      if (window.luckysheet) luckysheet.destroy();
+  } catch (e) { console.warn("Chưa có bảng tính để xóa"); }
 
-  // 3. Tải file Excel
-  LuckyExcel.transformExcelToLuckyByUrl(
-      url, 
-      "", 
-      (exportJson) => {
-          let sheetData = exportJson.sheets;
-          if (!sheetData || sheetData.length === 0) {
-              sheetData = [{ name: "Sheet1", status: 1, celldata: [] }];
+  // 4. TẠO DỮ LIỆU GIẢ (Không dùng LuckyExcel)
+  // Nếu đoạn này chạy lên hình -> Lỗi do file Excel của bạn.
+  // Nếu đoạn này vẫn báo lỗi -> Lỗi do file index.html nạp thư viện sai.
+  const dummyData = [{
+      "name": "Sheet Test",
+      "status": 1,
+      "celldata": [{"r":0,"c":0,"v":{"v":"Test thành công!","m":"Test thành công!","bg":"#f6b26b"}}]
+  }];
+
+  // 5. Khởi tạo (Delay nhẹ 50ms để DOM kịp render)
+  setTimeout(() => {
+      luckysheet.create({
+          container: 'spreadsheet-container', 
+          data: dummyData, // Dùng data giả
+          title: "Test Mode",
+          lang: 'vi',
+          showinfobar: false,
+          showsheetbar: true,
+          showtoolbar: true,
+          // Hook để debug
+          hook: {
+              workbookCreateAfter: function() {
+                  console.log("Đã tạo bảng tính thành công!");
+              }
           }
-          
-          // --- FIX LỖI: DÙNG SETTIMEOUT ĐỂ CHỜ DOM ỔN ĐỊNH ---
-          setTimeout(() => {
-              luckysheet.create({
-                  container: 'spreadsheet-container', 
-                  data: sheetData, 
-                  title: exportJson.info.name || "Bảng tính",
-                  lang: 'vi',
-                  
-                  // Cấu hình tối giản để tránh lỗi
-                  showinfobar: false,
-                  showsheetbar: true,
-                  showtoolbar: true,
-                  allowEdit: false // Chỉ cho xem
-              });
-              
-              // Đánh dấu là đã tạo
-              isLuckySheetCreated = true;
-          }, 100); // Chờ 100ms
-      },
-      (err) => {
-          console.error("Lỗi tải Excel:", err);
-          alert("Không tải được file Excel.");
-      }
-  );
+      });
+  }, 50);
 }
 // === 5. XỬ LÝ MENU BÊN PHẢI (LOGIC MỚI: PDF + EXCEL) ===
   const navItems = document.querySelectorAll(".nav-item");
