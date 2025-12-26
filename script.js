@@ -187,8 +187,9 @@ function loadExcelFile(url) {
               lang: 'vi',
               
               // === FIX LỖI FUNCTIONLIST (QUAN TRỌNG NHẤT) ===
-              forceCalculation: false,  // Tắt tính toán công thức tự động
-              functionButton: false,    // Ẩn nút hàm số để tránh lỗi click vào
+            //  forceCalculation: false,  // Tắt tính toán công thức tự động
+            //  functionButton: false,    // Ẩn nút hàm số để tránh lỗi click vào
+            enableFormula: false,
               
               showinfobar: false,
               showsheetbar: true,
