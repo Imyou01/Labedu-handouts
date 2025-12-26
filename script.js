@@ -153,47 +153,52 @@ document.addEventListener("DOMContentLoaded", () => {
 let isLuckySheetCreated = false;
 
 function loadExcelFile(url) {
-  // 1. Ẩn giao diện Sách
+  // Ẩn giao diện sách
   document.getElementById("flipbook").style.display = "none";
   document.querySelector(".toolbar").style.display = "none"; 
 
-  // 2. Hiện khung Excel
+  // Hiện khung Excel
   const sheetContainer = document.getElementById("spreadsheet-container");
   sheetContainer.style.display = "block"; 
   sheetContainer.innerHTML = ""; 
 
-  // Reset an toàn
+  // Reset nếu đã có
   if (isLuckySheetCreated && window.luckysheet) {
       try { luckysheet.destroy(); } catch (e) {}
   }
 
-  // 3. Tải file Excel thật
+  // Tải file
   LuckyExcel.transformExcelToLuckyByUrl(
       url, 
       "", 
       (exportJson) => {
-          let sheetData = exportJson.sheets;
-          if (!sheetData || sheetData.length === 0) {
-               // Fallback nếu file rỗng
-               sheetData = [{ name: "Sheet1", status: 1, celldata: [] }];
+          if (exportJson.sheets == null || exportJson.sheets.length == 0) {
+              alert("File Excel lỗi hoặc không có dữ liệu!");
+              return;
           }
           
-          luckysheet.create({
-              container: 'spreadsheet-container', 
-              data: sheetData, 
-              title: exportJson.info.name || "Bảng tính",
-              lang: 'vi',
-              showinfobar: false,
-              showsheetbar: true,
-              showtoolbar: true,
-              allowEdit: false // Chỉ xem
-          });
-          
-          isLuckySheetCreated = true;
+          // Dọn dẹp lại lần nữa cho chắc
+          if (window.luckysheet) {
+             try { luckysheet.destroy(); } catch(e){}
+          }
+
+          // Khởi tạo (Delay 50ms để thư viện load kịp)
+          setTimeout(() => {
+              luckysheet.create({
+                  container: 'spreadsheet-container', 
+                  data: exportJson.sheets, 
+                  title: exportJson.info.name,
+                  lang: 'vi',
+                  showinfobar: false,
+                  allowEdit: false, // Chỉ xem
+                  forceCalculation: true, // Bản 2.1.12 cần cái này để hiện số đúng
+              });
+              isLuckySheetCreated = true;
+          }, 50);
       },
       (err) => {
-          console.error("Lỗi:", err);
-          alert("Không đọc được file Excel (Kiểm tra lại đường dẫn file)");
+          console.error(err);
+          alert("Lỗi tải file: " + err);
       }
   );
 }
