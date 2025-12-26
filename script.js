@@ -151,6 +151,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 // --- HÀM MỚI: Tải và hiển thị Excel ---
 // --- HÀM MỚI: Dùng SheetJS (Không bao giờ lỗi functionlist) ---
+// --- HÀM MỚI: Hiển thị TOÀN BỘ các Sheet ---
 function loadExcelFile(url) {
   // 1. Ẩn giao diện Sách
   document.getElementById("flipbook").style.display = "none";
@@ -159,7 +160,7 @@ function loadExcelFile(url) {
   // 2. Hiện khung chứa
   const container = document.getElementById("spreadsheet-container");
   container.style.display = "block"; 
-  container.innerHTML = '<div style="text-align:center; padding:20px">Đang đọc file Excel...</div>';
+  container.innerHTML = '<div style="text-align:center; padding:20px">Đang đọc dữ liệu...</div>';
 
   // 3. Tải file Excel
   fetch(url)
@@ -168,22 +169,38 @@ function loadExcelFile(url) {
         return response.arrayBuffer();
     })
     .then(data => {
-        // Đọc dữ liệu bằng SheetJS
+        // Đọc workbook
         const workbook = XLSX.read(data, { type: 'array' });
         
-        // Lấy sheet đầu tiên
-        const firstSheetName = workbook.SheetNames[0];
-        const worksheet = workbook.Sheets[firstSheetName];
-        
-        // Chuyển thành HTML Table
-        const htmlString = XLSX.utils.sheet_to_html(worksheet, { id: "excel-table" });
-        
-        // Hiển thị ra màn hình
-        container.innerHTML = htmlString;
+        // Xóa thông báo "Đang đọc..."
+        container.innerHTML = "";
+
+        // === VÒNG LẶP: XỬ LÝ TỪNG SHEET ===
+        workbook.SheetNames.forEach(sheetName => {
+            const worksheet = workbook.Sheets[sheetName];
+            
+            // Chỉ hiển thị nếu sheet có dữ liệu (có vùng tham chiếu !ref)
+            if (worksheet['!ref']) {
+                // A. Tạo tiêu đề tên Sheet cho dễ nhìn
+                const title = document.createElement("h3");
+                title.innerText = `📂 Sheet: ${sheetName}`;
+                title.style.cssText = "margin-top: 30px; color: #1346ac; border-bottom: 2px solid #ddd; padding-bottom: 5px;";
+                container.appendChild(title);
+
+                // B. Tạo bảng dữ liệu
+                const tableWrapper = document.createElement("div");
+                // Chuyển sheet thành HTML Table
+                // (Không gán id cụ thể để tránh trùng lặp id khi có nhiều bảng)
+                tableWrapper.innerHTML = XLSX.utils.sheet_to_html(worksheet);
+                
+                // Thêm vào giao diện
+                container.appendChild(tableWrapper);
+            }
+        });
     })
     .catch(err => {
         console.error(err);
-        container.innerHTML = `<div style="color:red; padding:20px">Lỗi: ${err.message}<br>Hãy kiểm tra lại đường dẫn file Excel.</div>`;
+        container.innerHTML = `<div style="color:red; padding:20px">Lỗi: ${err.message}</div>`;
     });
 }
 // === 5. XỬ LÝ MENU BÊN PHẢI (LOGIC MỚI: PDF + EXCEL) ===
