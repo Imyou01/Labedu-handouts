@@ -5,14 +5,17 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Lab Edu Handout Viewer</title>
   <link rel="stylesheet" href="style.css">
-  <link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/luckysheet/dist/plugins/css/pluginsCss.css' />
-<link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/luckysheet/dist/plugins/plugins.css' />
-<link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/luckysheet/dist/css/luckysheet.css' />
-<link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/luckysheet/dist/assets/iconfont/iconfont.css' />
 
-<script src="https://cdn.jsdelivr.net/npm/luckysheet/dist/plugins/js/plugin.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/luckysheet/dist/luckysheet.umd.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/luckyexcel/dist/luckyexcel.umd.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
+
+  <link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/luckysheet/dist/plugins/css/pluginsCss.css' />
+  <link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/luckysheet/dist/plugins/plugins.css' />
+  <link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/luckysheet/dist/css/luckysheet.css' />
+  <link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/luckysheet/dist/assets/iconfont/iconfont.css' />
+
+  <script src="https://cdn.jsdelivr.net/npm/luckysheet/dist/plugins/js/plugin.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/luckysheet/dist/luckysheet.umd.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/luckyexcel/dist/luckyexcel.umd.js"></script>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js"></script>
@@ -40,22 +43,28 @@
         </label>
       </div>
 
-     <div id="flipbook" style="background: transparent !important; box-shadow: none !important;"></div>
+      <div id="flipbook" style="background: transparent !important; box-shadow: none !important;"></div>
 
-     <div id="spreadsheet-container" style="
-       width: 100%; 
-       height: 80vh; 
-       display: none; 
-       position: relative;">
-  </div>
+      <div id="spreadsheet-container" style="
+        width: 100%; 
+        height: 80vh; 
+        display: none; 
+        position: relative;">
+      </div>
     </main>
 
     <aside class="sidebar">
       <h3>Danh sách tài liệu</h3>
       <ul class="nav-list">
-        <li class="nav-item" data-type="pdf" data-url="./handouts/webinstruction.pdf">Hướng Dẫn Web</li>
-        <li class="nav-item" data-type="excel" data-url="./handouts/curriculum.xlsx">Danh sách lớp</li>
-        <li class="nav-item" data-url="./handouts/class_organization.pdf">
+        <li class="nav-item active" data-type="pdf" data-url="./handouts/webinstruction.pdf">
+            Hướng Dẫn Web
+        </li>
+        
+        <li class="nav-item" data-type="excel" data-url="./handouts/curriculum.xlsx">
+            Lộ trình tiếng Trung
+        </li>
+        
+        <li class="nav-item" data-type="pdf" data-url="./handouts/class_organization.pdf">
           Hướng dẫn thao tác tổ chức lớp học
         </li>
       </ul>
