@@ -163,26 +163,41 @@ function loadExcelFile(url) {
   if(window.luckysheet) luckysheet.destroy();
   // 3. Tải file
   // Lưu ý: Cần chắc chắn bạn đã nhúng thư viện LuckyExcel và Luckysheet ở index.html
-  LuckyExcel.transformExcelToLuckyByUrl(
+ LuckyExcel.transformExcelToLuckyByUrl(
       url, 
       "", 
       (exportJson) => {
-          if (!exportJson.sheets || exportJson.sheets.length === 0) {
-              alert("File Excel rỗng hoặc lỗi!");
-              return;
+          // --- FIX LỖI DỮ LIỆU RỖNG ---
+          // Nếu file Excel lỗi hoặc ko có dữ liệu, tạo một sheet trắng để không bị crash
+          let sheetData = exportJson.sheets;
+          if (!sheetData || sheetData.length === 0) {
+              console.warn("File Excel rỗng hoặc lỗi đọc, tạo sheet mặc định.");
+              sheetData = [{
+                  name: "Sheet1",
+                  status: 1,
+                  celldata: [] // Sheet trắng
+              }];
           }
           
+          // --- KHỞI TẠO LUCKYSHEET ---
           luckysheet.create({
               container: 'spreadsheet-container', 
-              data: exportJson.sheets, 
-              title: exportJson.info.name,
+              data: sheetData, 
+              title: exportJson.info.name || "Bảng tính",
               lang: 'vi',
-              showinfobar: false, 
+              
+              // === FIX LỖI FUNCTIONLIST (QUAN TRỌNG NHẤT) ===
+              forceCalculation: false,  // Tắt tính toán công thức tự động
+              functionButton: false,    // Ẩn nút hàm số để tránh lỗi click vào
+              
+              showinfobar: false,
+              showsheetbar: true,
+              showtoolbar: true,
           });
       },
       (err) => {
           console.error("Lỗi tải Excel:", err);
-          alert("Không tải được file Excel. Kiểm tra lại đường dẫn!");
+          alert("Lỗi tải file: " + err);
       }
   );
 }
