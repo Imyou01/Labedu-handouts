@@ -160,6 +160,7 @@ function loadExcelFile(url) {
   sheetContainer.style.display = "block"; 
   sheetContainer.innerHTML = ""; // Xóa dữ liệu cũ
 
+  if(window.luckysheet) luckysheet.destroy();
   // 3. Tải file
   // Lưu ý: Cần chắc chắn bạn đã nhúng thư viện LuckyExcel và Luckysheet ở index.html
   LuckyExcel.transformExcelToLuckyByUrl(
