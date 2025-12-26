@@ -151,3 +151,50 @@ button:hover { background: #f0f0f0; }
   background-color: white !important;
   border: none !important; /* Bỏ viền cho đẹp */
 }
+/* --- Style cho thanh Tab Excel --- */
+.excel-tabs {
+  display: flex;
+  gap: 5px;
+  background: #f8f9fa;
+  padding: 10px 10px 0 10px;
+  border-bottom: 2px solid #1346ac;
+  margin-bottom: 0;
+  overflow-x: auto; /* Cho phép cuộn ngang nếu nhiều sheet */
+}
+
+.tab-btn {
+  padding: 8px 16px;
+  border: 1px solid #ccc;
+  border-bottom: none;
+  border-radius: 8px 8px 0 0;
+  background: #e9ecef;
+  cursor: pointer;
+  font-weight: 500;
+  color: #555;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.tab-btn:hover {
+  background: #dbe4f3;
+}
+
+.tab-btn.active {
+  background: #1346ac; /* Màu xanh chủ đạo của bạn */
+  color: white;
+  font-weight: bold;
+}
+
+/* Khung chứa nội dung bảng */
+#excel-content-area {
+  padding: 20px;
+  background: white;
+  min-height: 500px;
+  border: 1px solid #ddd;
+  border-top: none;
+}
+
+/* Ẩn các cột rỗng (dùng cho thuật toán JS) */
+.hidden-col {
+  display: none !important;
+}
