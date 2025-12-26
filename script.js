@@ -150,55 +150,57 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 // --- HÀM MỚI: Tải và hiển thị Excel ---
+let isLuckySheetCreated = false;
+
 function loadExcelFile(url) {
-  // 1. Ẩn giao diện Sách & Toolbar
+  // 1. Ẩn Sách & Toolbar
   document.getElementById("flipbook").style.display = "none";
   document.querySelector(".toolbar").style.display = "none"; 
 
   // 2. Hiện khung Excel
   const sheetContainer = document.getElementById("spreadsheet-container");
   sheetContainer.style.display = "block"; 
-  sheetContainer.innerHTML = ""; // Xóa dữ liệu cũ
+  sheetContainer.innerHTML = ""; 
 
-  if(window.luckysheet) luckysheet.destroy();
-  // 3. Tải file
-  // Lưu ý: Cần chắc chắn bạn đã nhúng thư viện LuckyExcel và Luckysheet ở index.html
- LuckyExcel.transformExcelToLuckyByUrl(
+  // --- FIX LỖI: CHỈ DESTROY KHI ĐÃ TỪNG TẠO ---
+  if (isLuckySheetCreated && window.luckysheet) {
+      try {
+          luckysheet.destroy();
+      } catch (e) { console.log("Lỗi dọn dẹp cũ:", e); }
+  }
+
+  // 3. Tải file Excel
+  LuckyExcel.transformExcelToLuckyByUrl(
       url, 
       "", 
       (exportJson) => {
-          // --- FIX LỖI DỮ LIỆU RỖNG ---
-          // Nếu file Excel lỗi hoặc ko có dữ liệu, tạo một sheet trắng để không bị crash
           let sheetData = exportJson.sheets;
           if (!sheetData || sheetData.length === 0) {
-              console.warn("File Excel rỗng hoặc lỗi đọc, tạo sheet mặc định.");
-              sheetData = [{
-                  name: "Sheet1",
-                  status: 1,
-                  celldata: [] // Sheet trắng
-              }];
+              sheetData = [{ name: "Sheet1", status: 1, celldata: [] }];
           }
           
-          // --- KHỞI TẠO LUCKYSHEET ---
-          luckysheet.create({
-              container: 'spreadsheet-container', 
-              data: sheetData, 
-              title: exportJson.info.name || "Bảng tính",
-              lang: 'vi',
-             
+          // --- FIX LỖI: DÙNG SETTIMEOUT ĐỂ CHỜ DOM ỔN ĐỊNH ---
+          setTimeout(() => {
+              luckysheet.create({
+                  container: 'spreadsheet-container', 
+                  data: sheetData, 
+                  title: exportJson.info.name || "Bảng tính",
+                  lang: 'vi',
+                  
+                  // Cấu hình tối giản để tránh lỗi
+                  showinfobar: false,
+                  showsheetbar: true,
+                  showtoolbar: true,
+                  allowEdit: false // Chỉ cho xem
+              });
               
-              showinfobar: false,
-              showsheetbar: true,
-              showtoolbar: true,
-              
-              // Nếu mục đích của bạn là KHÔNG CHO HỌC SINH SỬA (Chỉ xem)
-              // Hãy dùng dòng này thay vì tắt formula:
-              allowEdit: false, 
-          });
+              // Đánh dấu là đã tạo
+              isLuckySheetCreated = true;
+          }, 100); // Chờ 100ms
       },
       (err) => {
           console.error("Lỗi tải Excel:", err);
-          alert("Lỗi tải file: " + err);
+          alert("Không tải được file Excel.");
       }
   );
 }
