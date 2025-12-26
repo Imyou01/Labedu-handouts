@@ -20,11 +20,12 @@
   <script src="https://cdn.jsdelivr.net/npm/page-flip@2.0.7/dist/js/page-flip.browser.min.js"></script>
 
   <style>
-    /* Làm đẹp bảng tính */
+    /* Áp dụng cho TẤT CẢ bảng trong khung container */
     #spreadsheet-container table {
       border-collapse: collapse;
       width: 100%;
       background: white;
+      margin-bottom: 20px; /* Cách nhau ra một chút */
     }
     #spreadsheet-container th, #spreadsheet-container td {
       border: 1px solid #ccc;
@@ -32,7 +33,7 @@
       font-size: 14px;
       color: #333;
     }
-    /* Tô màu hàng đầu tiên (Tiêu đề) */
+    /* Tô màu hàng tiêu đề của mỗi bảng */
     #spreadsheet-container tr:first-child td {
       background-color: #f3f3f3;
       font-weight: bold;
