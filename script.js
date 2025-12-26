@@ -149,15 +149,69 @@ document.addEventListener("DOMContentLoaded", () => {
       console.error(`Lỗi render trang ${pageNum}:`, e);
     }
   }
+// --- HÀM MỚI: Tải và hiển thị Excel ---
+function loadExcelFile(url) {
+  // 1. Ẩn giao diện Sách & Toolbar
+  document.getElementById("flipbook").style.display = "none";
+  document.querySelector(".toolbar").style.display = "none"; 
 
-  // === 5. XỬ LÝ MENU BÊN PHẢI (Giữ nguyên logic cũ) ===
+  // 2. Hiện khung Excel
+  const sheetContainer = document.getElementById("spreadsheet-container");
+  sheetContainer.style.display = "block"; 
+  sheetContainer.innerHTML = ""; // Xóa dữ liệu cũ
+
+  // 3. Tải file
+  // Lưu ý: Cần chắc chắn bạn đã nhúng thư viện LuckyExcel và Luckysheet ở index.html
+  LuckyExcel.transformExcelToLuckyByUrl(
+      url, 
+      "", 
+      (exportJson) => {
+          if (!exportJson.sheets || exportJson.sheets.length === 0) {
+              alert("File Excel rỗng hoặc lỗi!");
+              return;
+          }
+          
+          luckysheet.create({
+              container: 'spreadsheet-container', 
+              data: exportJson.sheets, 
+              title: exportJson.info.name,
+              lang: 'vi',
+              showinfobar: false, 
+          });
+      },
+      (err) => {
+          console.error("Lỗi tải Excel:", err);
+          alert("Không tải được file Excel. Kiểm tra lại đường dẫn!");
+      }
+  );
+}
+// === 5. XỬ LÝ MENU BÊN PHẢI (LOGIC MỚI: PDF + EXCEL) ===
   const navItems = document.querySelectorAll(".nav-item");
+  
   navItems.forEach(item => {
     item.addEventListener("click", () => {
+      // 1. Xử lý giao diện nút bấm (Active)
       navItems.forEach(nav => nav.classList.remove("active"));
       item.classList.add("active");
+
+      // 2. Lấy thông tin từ HTML
       const url = item.getAttribute("data-url");
-      if(url) loadBook(url);
+      const type = item.getAttribute("data-type"); // Lấy loại file (pdf hoặc excel)
+
+      // 3. Kiểm tra loại file để gọi hàm tương ứng
+      if (type === "excel") {
+        // --- NẾU LÀ EXCEL ---
+        loadExcelFile(url);
+      } else {
+        // --- NẾU LÀ PDF (Mặc định) ---
+        // Phải ẩn Excel đi và hiện lại Sách
+        document.getElementById("spreadsheet-container").style.display = "none";
+        document.getElementById("flipbook").style.display = "block"; // Hoặc flex
+        document.querySelector(".toolbar").style.display = "flex"; 
+        
+        // Gọi hàm tải sách cũ
+        if(url) loadBook(url);
+      }
     });
   });
 
