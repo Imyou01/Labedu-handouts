@@ -185,15 +185,15 @@ function loadExcelFile(url) {
               data: sheetData, 
               title: exportJson.info.name || "Bảng tính",
               lang: 'vi',
-              
-              // === FIX LỖI FUNCTIONLIST (QUAN TRỌNG NHẤT) ===
-            //  forceCalculation: false,  // Tắt tính toán công thức tự động
-            //  functionButton: false,    // Ẩn nút hàm số để tránh lỗi click vào
-            enableFormula: false,
+             
               
               showinfobar: false,
               showsheetbar: true,
               showtoolbar: true,
+              
+              // Nếu mục đích của bạn là KHÔNG CHO HỌC SINH SỬA (Chỉ xem)
+              // Hãy dùng dòng này thay vì tắt formula:
+              allowEdit: false, 
           });
       },
       (err) => {
