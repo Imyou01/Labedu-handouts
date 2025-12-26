@@ -150,57 +150,41 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 // --- HÀM MỚI: Tải và hiển thị Excel ---
-let isLuckySheetCreated = false;
-
+// --- HÀM MỚI: Dùng SheetJS (Không bao giờ lỗi functionlist) ---
 function loadExcelFile(url) {
-  // Ẩn giao diện sách
+  // 1. Ẩn giao diện Sách
   document.getElementById("flipbook").style.display = "none";
   document.querySelector(".toolbar").style.display = "none"; 
 
-  // Hiện khung Excel
-  const sheetContainer = document.getElementById("spreadsheet-container");
-  sheetContainer.style.display = "block"; 
-  sheetContainer.innerHTML = ""; 
+  // 2. Hiện khung chứa
+  const container = document.getElementById("spreadsheet-container");
+  container.style.display = "block"; 
+  container.innerHTML = '<div style="text-align:center; padding:20px">Đang đọc file Excel...</div>';
 
-  // Reset nếu đã có
-  if (isLuckySheetCreated && window.luckysheet) {
-      try { luckysheet.destroy(); } catch (e) {}
-  }
-
-  // Tải file
-  LuckyExcel.transformExcelToLuckyByUrl(
-      url, 
-      "", 
-      (exportJson) => {
-          if (exportJson.sheets == null || exportJson.sheets.length == 0) {
-              alert("File Excel lỗi hoặc không có dữ liệu!");
-              return;
-          }
-          
-          // Dọn dẹp lại lần nữa cho chắc
-          if (window.luckysheet) {
-             try { luckysheet.destroy(); } catch(e){}
-          }
-
-          // Khởi tạo (Delay 50ms để thư viện load kịp)
-          setTimeout(() => {
-              luckysheet.create({
-                  container: 'spreadsheet-container', 
-                  data: exportJson.sheets, 
-                  title: exportJson.info.name,
-                  lang: 'vi',
-                  showinfobar: false,
-                  allowEdit: false, // Chỉ xem
-                  forceCalculation: true, // Bản 2.1.12 cần cái này để hiện số đúng
-              });
-              isLuckySheetCreated = true;
-          }, 50);
-      },
-      (err) => {
-          console.error(err);
-          alert("Lỗi tải file: " + err);
-      }
-  );
+  // 3. Tải file Excel
+  fetch(url)
+    .then(response => {
+        if (!response.ok) throw new Error("Không tải được file");
+        return response.arrayBuffer();
+    })
+    .then(data => {
+        // Đọc dữ liệu bằng SheetJS
+        const workbook = XLSX.read(data, { type: 'array' });
+        
+        // Lấy sheet đầu tiên
+        const firstSheetName = workbook.SheetNames[0];
+        const worksheet = workbook.Sheets[firstSheetName];
+        
+        // Chuyển thành HTML Table
+        const htmlString = XLSX.utils.sheet_to_html(worksheet, { id: "excel-table" });
+        
+        // Hiển thị ra màn hình
+        container.innerHTML = htmlString;
+    })
+    .catch(err => {
+        console.error(err);
+        container.innerHTML = `<div style="color:red; padding:20px">Lỗi: ${err.message}<br>Hãy kiểm tra lại đường dẫn file Excel.</div>`;
+    });
 }
 // === 5. XỬ LÝ MENU BÊN PHẢI (LOGIC MỚI: PDF + EXCEL) ===
   const navItems = document.querySelectorAll(".nav-item");
