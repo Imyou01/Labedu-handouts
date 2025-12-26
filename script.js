@@ -157,43 +157,45 @@ function loadExcelFile(url) {
   document.getElementById("flipbook").style.display = "none";
   document.querySelector(".toolbar").style.display = "none"; 
 
-  // 2. Reset khung Excel
+  // 2. Hiện khung Excel
   const sheetContainer = document.getElementById("spreadsheet-container");
   sheetContainer.style.display = "block"; 
   sheetContainer.innerHTML = ""; 
 
-  // 3. Xóa dữ liệu cũ (Safe Destroy)
-  try {
-      if (window.luckysheet) luckysheet.destroy();
-  } catch (e) { console.warn("Chưa có bảng tính để xóa"); }
+  // Reset an toàn
+  if (isLuckySheetCreated && window.luckysheet) {
+      try { luckysheet.destroy(); } catch (e) {}
+  }
 
-  // 4. TẠO DỮ LIỆU GIẢ (Không dùng LuckyExcel)
-  // Nếu đoạn này chạy lên hình -> Lỗi do file Excel của bạn.
-  // Nếu đoạn này vẫn báo lỗi -> Lỗi do file index.html nạp thư viện sai.
-  const dummyData = [{
-      "name": "Sheet Test",
-      "status": 1,
-      "celldata": [{"r":0,"c":0,"v":{"v":"Test thành công!","m":"Test thành công!","bg":"#f6b26b"}}]
-  }];
-
-  // 5. Khởi tạo (Delay nhẹ 50ms để DOM kịp render)
-  setTimeout(() => {
-      luckysheet.create({
-          container: 'spreadsheet-container', 
-          data: dummyData, // Dùng data giả
-          title: "Test Mode",
-          lang: 'vi',
-          showinfobar: false,
-          showsheetbar: true,
-          showtoolbar: true,
-          // Hook để debug
-          hook: {
-              workbookCreateAfter: function() {
-                  console.log("Đã tạo bảng tính thành công!");
-              }
+  // 3. Tải file Excel thật
+  LuckyExcel.transformExcelToLuckyByUrl(
+      url, 
+      "", 
+      (exportJson) => {
+          let sheetData = exportJson.sheets;
+          if (!sheetData || sheetData.length === 0) {
+               // Fallback nếu file rỗng
+               sheetData = [{ name: "Sheet1", status: 1, celldata: [] }];
           }
-      });
-  }, 50);
+          
+          luckysheet.create({
+              container: 'spreadsheet-container', 
+              data: sheetData, 
+              title: exportJson.info.name || "Bảng tính",
+              lang: 'vi',
+              showinfobar: false,
+              showsheetbar: true,
+              showtoolbar: true,
+              allowEdit: false // Chỉ xem
+          });
+          
+          isLuckySheetCreated = true;
+      },
+      (err) => {
+          console.error("Lỗi:", err);
+          alert("Không đọc được file Excel (Kiểm tra lại đường dẫn file)");
+      }
+  );
 }
 // === 5. XỬ LÝ MENU BÊN PHẢI (LOGIC MỚI: PDF + EXCEL) ===
   const navItems = document.querySelectorAll(".nav-item");
